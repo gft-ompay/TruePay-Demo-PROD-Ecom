@@ -21,6 +21,39 @@ const ENV = /(^|\.)uat\./.test(config.baseUrl) ? { label: 'UAT · test', live: f
   : /localhost|127\.0\.0\.1/.test(config.baseUrl) ? { label: 'Local · test', live: false }
   : { label: 'LIVE · production', live: true };
 
+// ── Private access gate ─────────────────────────────────────────────────────
+// Render web services are PUBLIC by default. To keep this store visible only to
+// you, set a SITE_PASSWORD env var (and optionally SITE_USER, default "ompay").
+// When SITE_PASSWORD is set, every page requires HTTP Basic Auth; the browser
+// caches the login for the whole origin, so the checkout return page works too.
+// When it's unset, the site is open (handy for a throwaway UAT box).
+const GATE_USER = process.env.SITE_USER || 'ompay';
+const GATE_PASS = process.env.SITE_PASSWORD || '';
+// Constant-time-ish equality so the password check doesn't leak length via timing.
+function safeEqual(a, b) {
+  a = String(a); b = String(b);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ (b.charCodeAt(i) || 0);
+  return diff === 0;
+}
+// Returns true if the request is allowed through; otherwise writes a 401 and
+// returns false (caller must stop). No-op (always allows) when no password set.
+function passesGate(req, res) {
+  if (!GATE_PASS) return true;
+  const hdr = req.headers['authorization'] || '';
+  const m = /^Basic\s+(.+)$/i.exec(hdr);
+  if (m) {
+    const [user, ...rest] = Buffer.from(m[1], 'base64').toString('utf8').split(':');
+    if (safeEqual(user, GATE_USER) && safeEqual(rest.join(':'), GATE_PASS)) return true;
+  }
+  res.writeHead(401, {
+    'WWW-Authenticate': 'Basic realm="TestMart private area", charset="UTF-8"',
+    'Content-Type': 'text/html; charset=utf-8',
+  });
+  res.end('<h1>401 — Authentication required</h1><p>This store is private.</p>');
+  return false;
+}
+
 // In-memory order log (id -> {product, qty, createdAt}) so the return page can
 // show what was purchased. A real store would persist this in its own DB.
 const orders = new Map();
@@ -132,6 +165,10 @@ function statusPill(status) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
+
+  // Private-access gate (see passesGate). Stops here with a 401 unless the
+  // request carries the right Basic-Auth login — when SITE_PASSWORD is set.
+  if (!passesGate(req, res)) return;
 
   if (req.method === 'GET' && url.pathname === '/') {
     return send(res, 200, storefrontPage());

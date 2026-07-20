@@ -1,0 +1,11 @@
+{
+  "name": "truepay-test-store-demo",
+  "version": "1.0.0",
+  "description": "Dummy third-party storefront for exercising the TruePay bank-hosted checkout integration end to end. Self-contained; deployable to Render.com.",
+  "private": true,
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "web": "node server.js"
+  }
+}

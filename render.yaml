@@ -1,0 +1,32 @@
+# Render.com Blueprint for the TruePay PRODUCTION test storefront (TestMart).
+#
+# ⚠ PRODUCTION: this points at the LIVE core host — real cards, real money.
+#
+# This repo IS the app (store at the root), so no rootDir is needed.
+#
+# Two ways to use it:
+#   A) Blueprint (this file): Render → New → Blueprint → pick this repo. It sets
+#      everything below except the two secrets, which Render prompts you for.
+#   B) Manual: Render → New → Web Service → pick this repo,
+#      Build = npm install, Start = npm start, then add the env vars below.
+#
+# After the first deploy Render assigns a public URL (e.g.
+# https://truepay-prodstore.onrender.com). RENDER_EXTERNAL_URL is injected
+# automatically, so the checkout return_url is correct with no extra config.
+services:
+  - type: web
+    name: truepay-prodstore
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      # TruePay Core API — PRODUCTION (live). Change only to point at another env.
+      - key: TRUEPAY_BASE_URL
+        value: https://api.truepay.ompay.om
+      # Your PRODUCTION merchant's API credentials — set as SECRETS in the Render
+      # dashboard (sync:false means Render prompts you; never committed to git).
+      - key: TRUEPAY_API_KEY
+        sync: false
+      - key: TRUEPAY_API_SECRET
+        sync: false

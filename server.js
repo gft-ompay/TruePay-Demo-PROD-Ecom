@@ -59,9 +59,9 @@ function passesGate(req, res) {
 const orders = new Map();
 
 const PRODUCTS = [
-  { id: 'widget', name: 'Sample Widget', desc: 'A perfectly ordinary widget for testing checkout.', price: 5.000, emoji: '🧩' },
-  { id: 'gadget', name: 'Demo Gadget', desc: 'Mid-tier gadget, mid-tier price, high-tier vibes.', price: 12.500, emoji: '🎛️' },
-  { id: 'bundle', name: 'Trial Bundle', desc: 'The works — for testing a larger order amount.', price: 25.750, emoji: '📦' },
+  { id: 'widget', name: 'Sample Widget', desc: 'A perfectly ordinary widget for testing checkout.', price: 0.100, emoji: '🧩' },
+  { id: 'gadget', name: 'Demo Gadget', desc: 'Mid-tier gadget, mid-tier price, high-tier vibes.', price: 0.500, emoji: '🎛️' },
+  { id: 'bundle', name: 'Trial Bundle', desc: 'The works — for testing a larger order amount.', price: 1.000, emoji: '📦' },
 ];
 
 function htmlEscape(s) {
